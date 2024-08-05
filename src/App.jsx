@@ -35,7 +35,7 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <div className={`fixed ${isDesktop ? 'top-8 right-2 scale-90' : 'top-1 right-2 scale-75'} `}>
+      <div className={`absolute ${isDesktop ? 'top-8 right-2 scale-90' : 'top-1 right-2 scale-75'} `}>
         <RoleSwitch isAdmin={isAdmin} onToggle={handleRoleToggle} desktop={isDesktop} />
       </div>
       <div className="flex-grow flex flex-col items-center justify-center">
