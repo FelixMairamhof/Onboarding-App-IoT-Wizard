@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useMediaQuery } from 'react-responsive';
 import './App.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -10,10 +11,15 @@ import LogOut from './components/LogOut';
 import LoginAdmin from './components/LoginAdmin.jsx';
 import RoleSwitch from './components/RoleSwitch'; 
 import LoginUser from './components/LoginUser.jsx';
+import CerpStackPage from './components/CerpStackPage.jsx';
+import useToken from './hooks/useToken';  // Import the custom hook
 
 function App() {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false); // State to manage role view
+  const [token, updateToken] = useToken(); // Use the custom hook for token management
+
+  const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -29,25 +35,25 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <div className="fixed top-40 w-full flex justify-center">
-        <RoleSwitch isAdmin={isAdmin} onToggle={handleRoleToggle} />
+      <div className={`fixed ${isDesktop ? 'top-8 right-2 scale-90' : 'top-1 right-2 scale-75'} `}>
+        <RoleSwitch isAdmin={isAdmin} onToggle={handleRoleToggle} desktop={isDesktop} />
       </div>
       <div className="flex-grow flex flex-col items-center justify-center">
         {isAdmin ? (
           !user ? (
-            
-            <LoginAdmin type="Admin"/>
-            
+            <LoginAdmin type="Administrator"/>
           ) : (
             <div className="flex-grow flex flex-col items-center justify-center">
               <FileUpload />
-              <LogOut user={user} />
+              <LogOut user={user} updateToken={updateToken} />
             </div>
           )
         ) : (
-          
-          <LoginUser type="User"/>
-        
+          token ? (
+            <CerpStackPage updateToken={updateToken} />
+          ) : (
+            <LoginUser type="Benutzer" updateToken={updateToken} />
+          )
         )}
       </div>
       <BackgroundLogo />

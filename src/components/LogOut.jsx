@@ -2,13 +2,17 @@ import React from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase/firebase-config";
 
-export default function LogOut({ user }) {
+export default function LogOut({ user, updateToken }) {
     const handleLogout = async () => {
-        try {
-            console.log("User logged out: " + user.email);
-            await signOut(auth);
-        } catch (error) {
-            console.log(error.message.replace('Firebase:', ''));
+        if (user != null) {
+            try {
+                console.log("User logged out: " + user.email);
+                await signOut(auth);
+            } catch (error) {
+                console.log(error.message.replace('Firebase:', ''));
+            }
+        } else {
+            updateToken(null); // Use the updateToken function to remove the token
         }
     };
 
