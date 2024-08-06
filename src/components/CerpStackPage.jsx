@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import LogOut from './LogOut';
-import { projects } from '../projects/projects'; // Import the array of projects
+import { projects } from '../projects/projects';
 import QrScanner from "./QrScanner";
 import Photographer from './Photographer';
 import Tesseract from 'tesseract.js';
@@ -9,7 +9,7 @@ export default function CerpStackPage({ updateToken }) {
   const [selectedProject, setSelectedProject] = useState('');
   const [seriesNumber, setSeriesNumber] = useState('');
   const [ocrResult, setOcrResult] = useState('');
-  const [photoDataUri, setPhotoDataUri] = useState('');
+  const fileInputRef = useRef(null);
 
   const handleProjectChange = (e) => {
     setSelectedProject(e.target.value);
@@ -21,7 +21,7 @@ export default function CerpStackPage({ updateToken }) {
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
-    console.log(file);
+    console.log("Uploaded file:", file);  // Debug log
     if (file) {
       Tesseract.recognize(
         file,
@@ -31,31 +31,20 @@ export default function CerpStackPage({ updateToken }) {
         }
       ).then(({ data: { text } }) => {
         setOcrResult(text.trim());
-        setSeriesNumber(text.trim()); // Set the series number to the OCR result
+        setSeriesNumber(text.trim());
+        console.log("OCR result:", text.trim());  // Debug log
       }).catch(err => {
         console.error('OCR Error:', err);
-        // Optionally, display an error message to the user
       });
     }
   };
 
-  const handlePhotoTaken = (dataUri) => {
-    setPhotoDataUri(dataUri);
-    console.log(dataUri);
-
-    Tesseract.recognize(
-      dataUri,
-      'eng',
-      {
-        logger: (m) => console.log(m),
-      }
-    ).then(({ data: { text } }) => {
-      setOcrResult(text.trim());
-      setSeriesNumber(text.trim()); // Set the series number to the OCR result
-    }).catch(err => {
-      console.error('OCR Error:', err);
-      // Optionally, display an error message to the user
-    });
+  const handlePhotoTaken = (file) => {
+    console.log("Photo taken file:", file);  // Debug log
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    fileInputRef.current.files = dataTransfer.files;
+    handleImageUpload({ target: { files: dataTransfer.files } });
   };
 
   return (
@@ -63,61 +52,35 @@ export default function CerpStackPage({ updateToken }) {
       <h1 className="text-2xl mb-4">Hello you on CerpStack Page</h1>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Select Project
-        </label>
-        <select
-          value={selectedProject}
-          onChange={handleProjectChange}
-          className="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-        >
-          <option value="" disabled>
-            Choose a project
-          </option>
-          {projects.map((project, index) => (
-            <option key={index} value={project}>
-              {project}
-            </option>
+        <label>Project:</label>
+        <select value={selectedProject} onChange={handleProjectChange}>
+          {projects.map((project) => (
+            <option key={project.id} value={project.name}>{project.name}</option>
           ))}
         </select>
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Add Series Number
-        </label>
-        <input
-          type="text"
-          value={seriesNumber}
-          onChange={handleSeriesNumberChange}
-          className="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-          placeholder="Enter Series Number"
-        />
+        <label>Series Number:</label>
+        <input type="text" value={seriesNumber} onChange={handleSeriesNumberChange} />
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Or upload an image
-        </label>
-        <input
-          type="file"
-          onChange={handleImageUpload}
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-        />
-        {ocrResult && <p className="mt-2 text-sm text-gray-500">OCR Result: {ocrResult}</p>}
+        <input type="file" ref={fileInputRef} onChange={handleImageUpload} style={{ display: 'none' }} />
+        <Photographer onPhotoTaken={handlePhotoTaken} />
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Or scan a QR code
-        </label>
-        
+      
       </div>
 
-      <Photographer onPhotoTaken={handlePhotoTaken} />
+      <div className="mb-4">
+        <button onClick={() => updateToken('')}>Logout</button>
+      </div>
 
-      <div className="flex justify-center">
-        <LogOut user={null} updateToken={updateToken} />
+      <div className="mb-4">
+        <label>OCR Result:</label>
+        <textarea value={ocrResult} readOnly />
       </div>
     </div>
   );
