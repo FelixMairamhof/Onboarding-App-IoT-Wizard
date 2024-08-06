@@ -10,7 +10,7 @@ function Photographer({ onPhotoTaken }) {
   return (
     <Camera
       onTakePhoto={handleTakePhoto}
-      idealFacingMode="environment"
+      idealFacingMode="user"
       isFullscreen={true}
     />
   );

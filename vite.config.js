@@ -12,8 +12,8 @@ export default defineConfig({
         description: 'An onboarding application for IoT devices.',
         start_url: '/',
         display: 'standalone',
-        background_color: '#374151',
-        theme_color: '#374151',
+        background_color: '#d3d3d3',
+        theme_color: '#d3d3d3',
         icons: [
           {
             src: '/iotWizard.png',
