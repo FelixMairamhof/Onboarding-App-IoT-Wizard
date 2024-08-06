@@ -111,7 +111,7 @@ export default function CerpStackPage({ updateToken }) {
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Or scan a QR code
         </label>
-        <QrScanner />
+        
       </div>
 
       <Photographer onPhotoTaken={handlePhotoTaken} />
