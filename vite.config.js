@@ -8,12 +8,12 @@ export default defineConfig({
     VitePWA({
       manifest: {
         name: 'Onboarding IoT Wizard',
-        short_name: 'IoTWizard',
+        short_name: 'IoT-Wizard',
         description: 'An onboarding application for IoT devices.',
         start_url: '/',
         display: 'standalone',
-        background_color: '#d3d3d3',
-        theme_color: '#d3d3d3',
+        background_color: '#374151',
+        theme_color: '#374151',
         icons: [
           {
             src: '/iotWizard.png',
