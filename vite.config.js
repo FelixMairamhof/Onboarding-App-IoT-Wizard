@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import workboxBuild from 'workbox-build';
 
 export default defineConfig({
   plugins: [
@@ -36,6 +37,9 @@ export default defineConfig({
             type: 'image/png'
           }
         ]
+      },
+      workbox: {
+        workboxBuild
       }
     })
   ]
