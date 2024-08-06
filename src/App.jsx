@@ -13,19 +13,25 @@ import LogOut from './components/LogOut.jsx';
 
 function App() {
   const [isUser, setIsUser] = useState(true); // State to manage role view
-  const [token, updateToken] = useToken(); // Use the custom hook for token management
+  const [token, updateToken] = useToken(" "); // Use the custom hook for token management
   const [isAdmin, setIsAdmin] = useState(false); 
 
   const handleRoleToggle = () => {
     setIsUser(!isUser);
   };
-  function getAdminFromJwtToken(){
-    const decodedToken = jwtDecode(token);
-    //Check for all DB entries in the admins table
-    if(decodedToken.sub === 'felix.mairamhof@comm-unity.at'){
-      setIsAdmin(true);
+  function getAdminFromJwtToken() {
+    if (token && typeof token === 'string') {
+      try {
+        const decodedToken = jwtDecode(token);
+        if (decodedToken.sub === 'felix.mairamhof@comm-unity.at') {
+          setIsAdmin(true);
+        }
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
     }
   }
+  
   useEffect(() => {
     getAdminFromJwtToken();
   }, []);
