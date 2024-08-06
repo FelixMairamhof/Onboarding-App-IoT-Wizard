@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-export default function LoginUser({ type, updateToken }) {
+export default function LoginUser({ updateToken }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [feedback, setFeedback] = useState('');
@@ -32,7 +32,7 @@ export default function LoginUser({ type, updateToken }) {
 
   return (
     <div className="w-full max-w-xs bg-gradient-to-b from-gray-600 to-gray-700 p-8 rounded-lg shadow-2xl">
-      <h2 className="text-2xl font-bold mb-6 text-center text-white">Anmelden als {type}</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center text-white">Anmelden</h2>
       <form className="space-y-4" onSubmit={handleAuth}>
         <div>
           <label className="block text-sm font-medium text-gray-300">Email</label>

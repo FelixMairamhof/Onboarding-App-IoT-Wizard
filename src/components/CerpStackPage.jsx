@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import LogOut from './LogOut';
-import { projects } from '../projects/projects';  // Import the array of projects
-import { QrReader } from 'react-qr-reader';
+import { projects } from '../projects/projects'; // Import the array of projects
+import QrScanner from "./QrScanner";
+import Photographer from './Photographer';
 import Tesseract from 'tesseract.js';
 
 export default function CerpStackPage({ updateToken }) {
   const [selectedProject, setSelectedProject] = useState('');
   const [seriesNumber, setSeriesNumber] = useState('');
-  const [qrScanResult, setQrScanResult] = useState('');
   const [ocrResult, setOcrResult] = useState('');
+  const [photoDataUri, setPhotoDataUri] = useState('');
 
   const handleProjectChange = (e) => {
     setSelectedProject(e.target.value);
@@ -18,20 +19,9 @@ export default function CerpStackPage({ updateToken }) {
     setSeriesNumber(e.target.value);
   };
 
-  const handleQrScan = (result) => {
-    if (result) {
-      setQrScanResult(result);
-      setSeriesNumber(result);  // Set the series number to the scanned QR code result
-    }
-  };
-
-  const handleError = (error) => {
-    console.error('QR Code Error:', error);
-    // Optionally, display an error message to the user
-  };
-
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
+    console.log(file);
     if (file) {
       Tesseract.recognize(
         file,
@@ -41,12 +31,31 @@ export default function CerpStackPage({ updateToken }) {
         }
       ).then(({ data: { text } }) => {
         setOcrResult(text.trim());
-        setSeriesNumber(text.trim());  // Set the series number to the OCR result
+        setSeriesNumber(text.trim()); // Set the series number to the OCR result
       }).catch(err => {
         console.error('OCR Error:', err);
         // Optionally, display an error message to the user
       });
     }
+  };
+
+  const handlePhotoTaken = (dataUri) => {
+    setPhotoDataUri(dataUri);
+    console.log(dataUri);
+
+    Tesseract.recognize(
+      dataUri,
+      'eng',
+      {
+        logger: (m) => console.log(m),
+      }
+    ).then(({ data: { text } }) => {
+      setOcrResult(text.trim());
+      setSeriesNumber(text.trim()); // Set the series number to the OCR result
+    }).catch(err => {
+      console.error('OCR Error:', err);
+      // Optionally, display an error message to the user
+    });
   };
 
   return (
@@ -102,14 +111,10 @@ export default function CerpStackPage({ updateToken }) {
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Or scan a QR code
         </label>
-        <QrReader
-          delay={300}
-          onResult={handleQrScan} // Use onResult if that's the prop required by your version
-          onError={handleError}
-          style={{ width: '100%' }}
-        />
-        {qrScanResult && <p className="mt-2 text-sm text-gray-500">QR Code Result: {qrScanResult}</p>}
+        <QrScanner />
       </div>
+
+      <Photographer onPhotoTaken={handlePhotoTaken} />
 
       <div className="flex justify-center">
         <LogOut user={null} updateToken={updateToken} />

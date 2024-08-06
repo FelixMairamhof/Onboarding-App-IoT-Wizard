@@ -1,5 +1,4 @@
 import * as XLSX from "xlsx";
-import storeDataToFirestore from "../../firebase/firestore";
 
 /**
  * Processes the file, reads it, and converts it to JSON.
@@ -48,8 +47,7 @@ export const processFileData = async (file, columnNames) => {
           return;
         }
 
-        // Process jsonData as needed (e.g., store in Firestore)
-        storeDataToFirestore(jsonData);
+        // Process jsonData as needed 
         resolve({
           type: "success",
           message: `File "${file.name}" uploaded successfully.`,
