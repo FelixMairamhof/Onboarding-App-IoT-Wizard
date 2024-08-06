@@ -33,7 +33,7 @@ function Photographer({ onPhotoTaken }) {
   }, [webcamRef, onPhotoTaken]);
 
   return (
-    <div>
+    <div className='flex justify-center'>
       <Webcam
         audio={false}
         ref={webcamRef}
@@ -42,7 +42,7 @@ function Photographer({ onPhotoTaken }) {
         onUserMedia={(stream) => console.log("Webcam stream:", stream)}  // Debug log
         onUserMediaError={(error) => console.error("Webcam error:", error)}  // Error handling
       />
-      <button onClick={capture}>Capture photo</button>
+      <button onClick={capture} className=' mx-2 bg-gray-700 hover:bg-gray-600 p-4 rounded-full '>Capture photo</button>
     </div>
   );
 }
