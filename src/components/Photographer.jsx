@@ -1,5 +1,5 @@
 import React from 'react';
-import Camera, { FACING_MODES } from 'react-html5-camera-photo';
+import Camera,{ FACING_MODES} from 'react-html5-camera-photo';
 import 'react-html5-camera-photo/build/css/index.css';
 
 function Photographer({ onPhotoTaken }) {
@@ -10,7 +10,7 @@ function Photographer({ onPhotoTaken }) {
   return (
     <Camera
       onTakePhoto={handleTakePhoto}
-      idealFacingMode={FACING_MODES.ENVIRONMENT}
+      idealFacingMode={FACING_MODES.USER}
       
     />
   );

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import LogOut from './LogOut';
-import { projects } from '../projects/projects';
-import QrScanner from './QrScanner';
+import { projects } from '../projects/projects'; // Import the array of projects
+import QrScanner from "./QrScanner";
 import Photographer from './Photographer';
 import Tesseract from 'tesseract.js';
 
@@ -10,7 +10,6 @@ export default function CerpStackPage({ updateToken }) {
   const [seriesNumber, setSeriesNumber] = useState('');
   const [ocrResult, setOcrResult] = useState('');
   const [photoDataUri, setPhotoDataUri] = useState('');
-  const [isPhotoMode, setIsPhotoMode] = useState(false); // State to toggle between QR scanner and Photographer
 
   const handleProjectChange = (e) => {
     setSelectedProject(e.target.value);
@@ -22,31 +21,40 @@ export default function CerpStackPage({ updateToken }) {
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
+    console.log(file);
     if (file) {
       Tesseract.recognize(
         file,
         'eng',
-        { logger: (m) => console.log(m) }
+        {
+          logger: (m) => console.log(m),
+        }
       ).then(({ data: { text } }) => {
         setOcrResult(text.trim());
-        setSeriesNumber(text.trim());
+        setSeriesNumber(text.trim()); // Set the series number to the OCR result
       }).catch(err => {
         console.error('OCR Error:', err);
+        // Optionally, display an error message to the user
       });
     }
   };
 
   const handlePhotoTaken = (dataUri) => {
     setPhotoDataUri(dataUri);
+    console.log(dataUri);
+
     Tesseract.recognize(
       dataUri,
       'eng',
-      { logger: (m) => console.log(m) }
+      {
+        logger: (m) => console.log(m),
+      }
     ).then(({ data: { text } }) => {
       setOcrResult(text.trim());
-      setSeriesNumber(text.trim());
+      setSeriesNumber(text.trim()); // Set the series number to the OCR result
     }).catch(err => {
       console.error('OCR Error:', err);
+      // Optionally, display an error message to the user
     });
   };
 
@@ -103,19 +111,10 @@ export default function CerpStackPage({ updateToken }) {
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Or scan a QR code
         </label>
-        {!isPhotoMode && <QrScanner />}
+        <QrScanner />
       </div>
 
-      <div className="mb-4">
-        <button
-          onClick={() => setIsPhotoMode(!isPhotoMode)}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md"
-        >
-          {isPhotoMode ? 'Switch to QR Scanner' : 'Switch to Photographer'}
-        </button>
-      </div>
-
-      {isPhotoMode && <Photographer onPhotoTaken={handlePhotoTaken} />}
+      <Photographer onPhotoTaken={handlePhotoTaken} />
 
       <div className="flex justify-center">
         <LogOut user={null} updateToken={updateToken} />
