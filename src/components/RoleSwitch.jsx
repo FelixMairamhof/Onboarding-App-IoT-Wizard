@@ -6,7 +6,7 @@ const RoleSwitch = ({ isUser, onToggle }) => {
 
       
         <div className="relative inline-flex items-center justify-center w-64 h-12 bg-gray-700 rounded-full shadow-lg">
-          <span className={`absolute left-4 text-sm font-medium ${isUser ? 'text-gray-500' : 'text-gray-300'}`}>Benutzer</span>
+          <span className={`absolute left-4 text-sm font-medium ${isUser ? 'text-gray-500' : 'text-gray-300'}`}>Admin</span>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
@@ -21,7 +21,7 @@ const RoleSwitch = ({ isUser, onToggle }) => {
               }`}
             ></div>
           </label>
-          <span className={`absolute right-4 text-sm font-medium ${isUser ? 'text-gray-300' : 'text-gray-500'}`}>Admin</span>
+          <span className={`absolute right-4 text-sm font-medium ${isUser ? 'text-gray-300' : 'text-gray-500'}`}>Benutzer</span>
         </div>
       
     </div>

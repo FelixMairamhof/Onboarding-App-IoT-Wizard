@@ -11,8 +11,13 @@ export default function LoginUser({ updateToken }) {
   const handleAuth = async (event) => {
     event.preventDefault();
 
+    if (!email || !password) {
+      setFeedback('Bitte füllen Sie beide Felder aus.');
+      return;
+    }
+
     try {
-      const response = await axios.post(API_BASE_URL + '/api/auth/login', {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         username: email,
         password: password
       });
@@ -26,6 +31,7 @@ export default function LoginUser({ updateToken }) {
       setFeedback(errorMessage);
     }
 
+    // Clear fields after submission
     setEmail('');
     setPassword('');
   };
@@ -38,10 +44,10 @@ export default function LoginUser({ updateToken }) {
           <label className="block text-sm font-medium text-gray-300">Email</label>
           <input
             type="email"
-            autoFocus={true}
+            autoFocus
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder='Geben Sie ihre E-Mail ein'
+            placeholder="Geben Sie ihre E-Mail ein"
             className="mt-1 block w-full px-3 py-2 border bg-gray-200 border-gray-500 rounded-md shadow-xl placeholder-gray-400 focus:outline-none focus:ring-gray-400 focus:border-gray-400"
             required
           />
@@ -52,7 +58,7 @@ export default function LoginUser({ updateToken }) {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder='Geben Sie ihr Passwort ein'
+            placeholder="Geben Sie ihr Passwort ein"
             className="mt-1 block w-full px-3 py-2 bg-gray-200 border border-gray-500 rounded-md shadow-xl placeholder-gray-400 focus:outline-none focus:ring-gray-400 focus:border-gray-400"
             required
           />
@@ -63,7 +69,9 @@ export default function LoginUser({ updateToken }) {
         >
           Login
         </button>
-        <h1 className="text-center text-gray-200 mt-2">{feedback}</h1>
+        {feedback && (
+          <h1 className="text-center text-gray-200 mt-2">{feedback}</h1>
+        )}
       </form>
     </div>
   );
