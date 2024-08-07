@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-
+import axios from 'axios';
 /**
  * Processes the file, reads it, and converts it to JSON.
  * 
@@ -47,6 +47,8 @@ export const processFileData = async (file, columnNames) => {
           return;
         }
 
+        console.log(jsonData);
+        //TODO: Delete empty jsons and  store it in DB
         // Process jsonData as needed 
         resolve({
           type: "success",
