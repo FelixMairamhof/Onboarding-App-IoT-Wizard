@@ -17,7 +17,7 @@ const RoleSwitch = ({ isUser, onToggle }) => {
             <div className="w-14 h-7 bg-gray-500 rounded-full shadow-inner"></div>
             <div
               className={`absolute w-6 h-6 bg-gray-300 rounded-full shadow transform transition-transform ${
-                isUser ? 'translate-x-7' : 'translate-x-0'
+                isUser ? 'translate-x-8' : 'translate-x-0'
               }`}
             ></div>
           </label>

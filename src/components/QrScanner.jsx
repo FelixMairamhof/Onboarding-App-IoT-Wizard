@@ -33,7 +33,7 @@ const QrScanner = React.memo(({ onScan }) => {
 
   return (
     <div className="animate-fadeIn">
-      <video ref={videoRef} className='rounded-2xl mt-2 shadow-2xl' />
+      <video ref={videoRef} className='rounded-2xl mt-2 shadow-2xl animate-fadeInLong' />
       <h1 className='text-center mt-4'>{data}</h1>
     </div>
   );

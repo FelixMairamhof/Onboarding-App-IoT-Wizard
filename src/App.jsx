@@ -10,11 +10,13 @@ import useToken from './hooks/useToken';
 import FileUpload from './components/FileUpload.jsx';
 import { jwtDecode } from "jwt-decode";
 import LogOut from './components/LogOut.jsx';
+import ThingBoardPage from './components/ThingBoardPage.jsx';
 
 function App() {
   const [isUser, setIsUser] = useState(true); 
   const [token, updateToken] = useToken(" ");
   const [isAdmin, setIsAdmin] = useState(false); 
+  const [isOnCerpStackPage, setIsOnCerpStackPage] = useState(true);
 
   useEffect(() => {
     if (token) {
@@ -36,10 +38,17 @@ function App() {
         {token ? (
           <>
             {isUser ? (
-              <>
-                <CerpStackPage />
-                <LogOut updateToken={updateToken} />
-              </>
+              isOnCerpStackPage ? (
+                <>
+                  <CerpStackPage setIsOnCerpStackPage={setIsOnCerpStackPage} />
+                  <LogOut updateToken={updateToken} />
+                </>
+              ) : (
+                <>
+                  <ThingBoardPage setIsOnCerpStackPage={setIsOnCerpStackPage} />
+                  <LogOut updateToken={updateToken} />
+                </>
+              )
             ) : (
               <>
                 <FileUpload />
@@ -49,7 +58,7 @@ function App() {
             {isAdmin && <RoleSwitch isUser={isUser} onToggle={() => setIsUser(!isUser)} />}
           </>
         ) : (
-          <LoginUser type="Benutzer" updateToken={updateToken} />
+          <LoginUser updateToken={updateToken} />
         )}
       </div>
       <BackgroundLogo />
