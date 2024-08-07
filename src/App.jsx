@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -6,21 +6,18 @@ import BackgroundLogo from './components/BackgroundLogo';
 import RoleSwitch from './components/RoleSwitch'; 
 import LoginUser from './components/LoginUser.jsx';
 import CerpStackPage from './components/CerpStackPage.jsx';
-import useToken from './hooks/useToken';  // Import the custom hook
+import useToken from './hooks/useToken';  
 import FileUpload from './components/FileUpload.jsx';
 import { jwtDecode } from "jwt-decode";
 import LogOut from './components/LogOut.jsx';
 
 function App() {
-  const [isUser, setIsUser] = useState(true); // State to manage role view
-  const [token, updateToken] = useToken(" "); // Use the custom hook for token management
+  const [isUser, setIsUser] = useState(true); 
+  const [token, updateToken] = useToken(" ");
   const [isAdmin, setIsAdmin] = useState(false); 
 
-  const handleRoleToggle = () => {
-    setIsUser(!isUser);
-  };
-  function getAdminFromJwtToken() {
-    if (token && typeof token === 'string') {
+  useEffect(() => {
+    if (token) {
       try {
         const decodedToken = jwtDecode(token);
         if (decodedToken.sub === 'felix.mairamhof@comm-unity.at') {
@@ -30,11 +27,7 @@ function App() {
         console.error('Error decoding token:', error);
       }
     }
-  }
-  
-  useEffect(() => {
-    getAdminFromJwtToken();
-  }, []);
+  }, [token]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -43,15 +36,17 @@ function App() {
         {token ? (
           <>
             {isUser ? (
-              <CerpStackPage updateToken={updateToken} />
+              <>
+                <CerpStackPage />
+                <LogOut updateToken={updateToken} />
+              </>
             ) : (
               <>
                 <FileUpload />
                 <LogOut updateToken={updateToken} />
               </>
             )}
-            {isAdmin && <RoleSwitch isUser={isUser} onToggle={handleRoleToggle} />}
-            
+            {isAdmin && <RoleSwitch isUser={isUser} onToggle={() => setIsUser(!isUser)} />}
           </>
         ) : (
           <LoginUser type="Benutzer" updateToken={updateToken} />

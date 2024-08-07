@@ -6,7 +6,7 @@ export default function LogOut({ updateToken }) {
     };
     return (
         <button 
-            className="bg-gray-800 hover:bg-gray-700 my-10 text-white py-2 px-4 rounded"
+            className="bg-gray-800 hover:bg-gray-700 my-4 text-white py-2 px-4 rounded hover:scale-105"
             onClick={handleLogout}
         >
             Logout

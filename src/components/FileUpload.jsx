@@ -54,6 +54,12 @@ const FileUpload = () => {
       try {
         const result = await processFileData(file, columnNames);
         setResultMsg(result.message); // Set the result message
+        setColumnNames({
+          serialNumber: "",
+          devEui: "",
+          appEui: "",
+          appKey: "",
+        });
       } catch (error) {
         setResultMsg("An error occurred during file processing."); // Handle error
       }
@@ -63,7 +69,7 @@ const FileUpload = () => {
   };
 
   return (
-    <div className="w-full mt-8 max-w-xs px-12 bg-gradient-to-b from-gray-600 to-gray-700 p-8 rounded-2xl shadow-2xl">
+    <div className="w-full mt-8 mb-4 max-w-xs px-12 bg-gradient-to-b from-gray-600 to-gray-700 p-8 rounded-2xl shadow-2xl animate-fadeIn">
       <h1 className="text-2xl font-bold text-white mb-6 text-center">Spreadsheet</h1>
       <div
         className={`flex flex-col bg-gray-200 hover:scale-105 border-2 border-dashed border-gray-500 items-center justify-center w-full h-24 rounded-lg cursor-pointer transition-transform duration-300 ease-in-out ${
@@ -94,10 +100,11 @@ const FileUpload = () => {
               id={key}
               type="text"
               name={key}
+              required
               placeholder={`Enter ${key.replace(/([A-Z])/g, ' $1')}`}
               value={columnNames[key]}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 bg-gray-200 border border-gray-500 rounded-md shadow-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400"
+              className="w-full hover:scale-105 px-3 py-2 bg-gray-200 border border-gray-500 rounded-md shadow-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400"
             />
           </div>
         ))}

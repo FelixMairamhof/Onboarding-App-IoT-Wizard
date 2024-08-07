@@ -1,16 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import LogOut from './LogOut';
-import { projects } from '../projects/projects';
-import QrScanner from './QrScanner'; // Import QrScanner
-import Photographer from './Photographer';
-import Tesseract from 'tesseract.js';
+import QrScanner from './QrScanner'; 
 
-export default function CerpStackPage({ updateToken }) {
+export default function CerpStackPage() {
   const [selectedProject, setSelectedProject] = useState('');
   const [seriesNumber, setSeriesNumber] = useState('');
-  const [ocrResult, setOcrResult] = useState('');
-  const [photoDataUri, setPhotoDataUri] = useState('');
-  const [isPhotoMode, setIsPhotoMode] = useState(false);
+  const sensors = ["Rasby", "Microtik", "ESP32", "Arduino"];
 
   const handleProjectChange = (e) => {
     setSelectedProject(e.target.value);
@@ -20,47 +15,17 @@ export default function CerpStackPage({ updateToken }) {
     setSeriesNumber(e.target.value);
   };
 
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      Tesseract.recognize(
-        file,
-        'eng',
-        { logger: (m) => console.log(m) }
-      ).then(({ data: { text } }) => {
-        setOcrResult(text.trim());
-        setSeriesNumber(text.trim());
-      }).catch(err => {
-        console.error('OCR Error:', err);
-      });
-    }
-  };
-
-  const handlePhotoTaken = (dataUri) => {
-    setPhotoDataUri(dataUri);
-    Tesseract.recognize(
-      dataUri,
-      'eng',
-      { logger: (m) => console.log(m) }
-    ).then(({ data: { text } }) => {
-      setOcrResult(text.trim());
-      setSeriesNumber(text.trim());
-    }).catch(err => {
-      console.error('OCR Error:', err);
-    });
-  };
-
-  const handleQrScan = (text) => {
+  const handleQrScan = useCallback((text) => {
     setSeriesNumber(text); // Update seriesNumber with QR scan result
-  };
+  }, []);
 
   return (
-    <div className="p-6 m-4 rounded-2xl bg-gradient-to-b from-gray-600 to-gray-700 min-h-screen text-gray-200">
+    <div className="p-6 m-4 rounded-2xl bg-gradient-to-b from-gray-600 to-gray-700 text-gray-200 animate-fadeIn">
       <h1 className="text-3xl font-bold mb-6">Neuer Sensor</h1>
 
       <div className="mb-6">
         <label className="block text-sm font-medium mb-1">
-          Select Project
+          Sensor-Auswahl
         </label>
         <select
           value={selectedProject}
@@ -68,11 +33,11 @@ export default function CerpStackPage({ updateToken }) {
           className="w-full p-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
         >
           <option value="" disabled>
-            Choose a project
+            Sensor auswählen
           </option>
-          {projects.map((project, index) => (
-            <option key={index} value={project}>
-              {project}
+          {sensors.map((sensor, index) => (
+            <option key={index} value={sensor}>
+              {sensor}
             </option>
           ))}
         </select>
@@ -93,37 +58,11 @@ export default function CerpStackPage({ updateToken }) {
 
       <div className="mb-6">
         <label className="block text-sm font-medium mb-1">
-          Or upload an image
+          Scan a QR code
         </label>
-        <input
-          type="file"
-          onChange={handleImageUpload}
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-        />
-        {ocrResult && <p className="mt-2 text-sm">OCR Result: {ocrResult}</p>}
+        <QrScanner onScan={handleQrScan} />
       </div>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium mb-1">
-          Or scan a QR code
-        </label>
-        {!isPhotoMode && <QrScanner onScan={handleQrScan} />}
-      </div>
-
-      <div className="mb-6">
-        <button
-          onClick={() => setIsPhotoMode(!isPhotoMode)}
-          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
-        >
-          {isPhotoMode ? 'Switch to QR Scanner' : 'Switch to Photographer'}
-        </button>
-      </div>
-
-      {isPhotoMode && <Photographer onPhotoTaken={handlePhotoTaken} />}
-
-      <div className="flex justify-center mt-6">
-        <LogOut user={null} updateToken={updateToken} />
-      </div>
     </div>
   );
 }
