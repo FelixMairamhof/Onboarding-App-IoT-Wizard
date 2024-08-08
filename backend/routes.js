@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllAdmins, insertSensorData, insertAdmin } from './database.js';
+import { getAllAdmins, insertSensorData, insertAdmin, insertSensorProfile } from './database.js';
 
 const router = express.Router();
 
@@ -38,4 +38,19 @@ router.post('/admins', async (req, res) => {
     }
   });
 
+  router.post('/sensor-profile', async (req, res) => {
+    const { name, guide, qrResult, videoUrl } = req.body;
+    
+    if (!name || !guide || !qrResult || !videoUrl) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+    
+    try {
+      const newProfile = await insertSensorProfile({ name, guide, qrResult, videoUrl });
+      res.status(201).json(newProfile);
+    } catch (err) {
+      console.error('Error in /sensor-profile route:', err);
+      res.status(500).send('Error inserting sensor profile');
+    }
+  });
 export default router;

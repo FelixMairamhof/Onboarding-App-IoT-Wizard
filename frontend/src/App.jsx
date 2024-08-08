@@ -14,6 +14,7 @@ import axios from 'axios';
 import {jwtDecode} from "jwt-decode";
 import AddAdmin from './components/AddAdmin.jsx';
 import JsonUpload from './components/JsonUpload.jsx';
+import SensorProfile from './components/SensorProfile.jsx';
 
 function App() {
   const [isUser, setIsUser] = useState(true); 
@@ -71,6 +72,7 @@ function App() {
                   <AddAdmin/>
                   <JsonUpload/>
                 </div>
+                <SensorProfile/>
                 <LogOut updateToken={updateToken} />
               </>
             )}

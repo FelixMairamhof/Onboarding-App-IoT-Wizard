@@ -61,6 +61,25 @@ export const insertAdmin = async (email) => {
     }
   };
 
+  export const insertSensorProfile = async (sensorProfile) => {
+    const { name, guide, qrResult, videoUrl } = sensorProfile;
+    const query = `
+      INSERT INTO sensor_profiles (name, guide, qr_result, video_url, created_at)
+      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+      RETURNING *;
+    `;
+    const values = [name, guide, qrResult, videoUrl];
+  
+    try {
+      const res = await client.query(query, values);
+      console.log(res.rows[0]);
+      return res.rows[0];
+    } catch (err) {
+      console.error('Error inserting sensor profile:', err);
+      throw err;
+    }
+};
+
 process.on('exit', () => {
   client.end().catch(err => console.error('Error closing the database connection:', err));
 });
