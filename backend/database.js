@@ -1,27 +1,66 @@
-import pg from 'pg';
+import { Client } from 'pg';
 
-const client = new pg.Client({
-  host: 'localhost', // or the IP address of your PostgreSQL container
-  port: 5432,        // default PostgreSQL port
-  user: 'postgres',  // default PostgreSQL user
-  password: 'admin', // your PostgreSQL password
-  database: 'postgres' // name of the database
+const client = new Client({
+  host: 'localhost',
+  port: 5432,
+  user: 'postgres',
+  password: 'admin',
+  database: 'postgres'
 });
 
-// Connect to the database
 client.connect().catch(err => console.error('Error connecting to the database:', err));
 
 export const getAllAdmins = async () => {
   try {
     const res = await client.query('SELECT * FROM admins');
+    console.log(res.rows);
     return res.rows;
   } catch (err) {
     console.error('Error querying the database:', err);
-    throw err; // rethrow the error for the route handler to catch
+    throw err;
   }
 };
+export const insertSensorData = async (sensorDataArray) => {
+    const query = `
+      INSERT INTO sensor_data (serial_number, dev_eui, app_eui, app_key, created_at)
+      VALUES 
+      ${sensorDataArray.map((_, i) => `($${i*4+1}, $${i*4+2}, $${i*4+3}, $${i*4+4}, CURRENT_TIMESTAMP)`).join(', ')}
+      ON CONFLICT (serial_number)
+      DO UPDATE SET
+        dev_eui = EXCLUDED.dev_eui,
+        app_eui = EXCLUDED.app_eui,
+        app_key = EXCLUDED.app_key,
+        created_at = EXCLUDED.created_at
+      RETURNING *;
+    `;
+    
+    const values = sensorDataArray.flatMap(data => [data.serialNumber, data.devEui, data.appEui, data.appKey]);
+  
+    try {
+      const res = await client.query(query, values);
+      console.log(res.rows);
+      return res.rows;
+    } catch (err) {
+      console.error('Error inserting sensor data:', err);
+      throw err;
+    }
+  };
+  
 
-// Close the connection when the process exits
+export const insertAdmin = async (email) => {
+    const query = 'INSERT INTO admins (email) VALUES ($1) RETURNING *;';
+    const values = [email];
+    
+    try {
+      const res = await client.query(query, values);
+      console.log(res.rows[0]);
+      return res.rows[0];
+    } catch (err) {
+      console.error('Error inserting admin:', err);
+      throw err;
+    }
+  };
+
 process.on('exit', () => {
   client.end().catch(err => console.error('Error closing the database connection:', err));
 });

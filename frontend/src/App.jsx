@@ -12,6 +12,8 @@ import LogOut from './components/LogOut.jsx';
 import ThingBoardPage from './components/ThingBoardPage.jsx';
 import axios from 'axios';
 import {jwtDecode} from "jwt-decode";
+import AddAdmin from './components/AddAdmin.jsx';
+import JsonUpload from './components/JsonUpload.jsx';
 
 function App() {
   const [isUser, setIsUser] = useState(true); 
@@ -47,7 +49,7 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <div className="flex-grow flex flex-col items-center justify-center">
+      <div className="flex-grow flex flex-col items-center justify-center p-4">
         {token ? (
           <>
             {isUser ? (
@@ -64,7 +66,11 @@ function App() {
               )
             ) : (
               <>
-                <FileUpload />
+                <div className='grid grid-cols-3 gap-10 max-sm:block'>
+                  <FileUpload />
+                  <AddAdmin/>
+                  <JsonUpload/>
+                </div>
                 <LogOut updateToken={updateToken} />
               </>
             )}

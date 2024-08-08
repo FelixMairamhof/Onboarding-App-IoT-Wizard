@@ -32,7 +32,7 @@ export default function CameraComponent() {
       ) : (
         <div className="text-center">
           <img
-            src="./crossedCamera.png" // Replace with the path to your fallback image
+            src="./crossedCamera.png" 
             alt="Fallback"
             className=" scale-50  mt-2 filter invert opacity-70"
           />

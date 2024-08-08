@@ -54,14 +54,19 @@ const FileUpload = () => {
       try {
         const result = await processFileData(file, columnNames);
         setResultMsg(result.message); // Set the result message
+      } catch (error) {
+        setResultMsg("An error occurred during file processing."); // Handle error
+      } finally {
+        // Reset states after processing
+        setFile(null);
         setColumnNames({
           serialNumber: "",
           devEui: "",
           appEui: "",
           appKey: "",
         });
-      } catch (error) {
-        setResultMsg("An error occurred during file processing."); // Handle error
+        // Force the file input to reset
+        document.getElementById('file-input').value = '';
       }
     } else {
       setResultMsg("No file selected.");
@@ -69,7 +74,7 @@ const FileUpload = () => {
   };
 
   return (
-    <div className="w-full mt-8 mb-4 max-w-xs px-12 bg-gradient-to-b from-gray-600 to-gray-700 p-8 rounded-2xl shadow-2xl animate-fadeIn">
+    <div className="w-full mt-8 mb-4 max-w-xs px-12 bg-gradient-to-b from-gray-600 to-gray-700 p-8 rounded-2xl shadow-2xl animate-fadeIn hover:-translate-y-2 transition-transform duration-300 ease-in-out ">
       <h1 className="text-2xl font-bold text-white mb-6 text-center">Spreadsheet</h1>
       <div
         className={`flex flex-col bg-gray-200 hover:scale-105 border-2 border-dashed border-gray-500 items-center justify-center w-full h-24 rounded-lg cursor-pointer transition-transform duration-300 ease-in-out ${
@@ -81,6 +86,7 @@ const FileUpload = () => {
       >
         <input
           type="file"
+          accept=".csv, .xls, .xlsx"
           onChange={handleFileChange}
           className="hidden"
           id="file-input"
@@ -110,7 +116,7 @@ const FileUpload = () => {
         ))}
         <button
           type="submit"
-          className="w-full bg-gray-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+          className="w-full hover:scale-105 bg-gray-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
         >
           Upload
         </button>
