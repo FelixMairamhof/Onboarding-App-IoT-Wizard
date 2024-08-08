@@ -1,6 +1,7 @@
+// src/components/ThingBoardPage.jsx
 import React, { useState } from "react";
 
-export default function ThingBoardPage({ setIsOnCerpStackPage }) {
+export default function ThingBoardPage({ setIsOnCerpStackPage, setIsOnInstructionPage,setIsOnThingBoardPage }) {
   const [name, setName] = useState('');
   const [floor, setFloor] = useState('');
   const [building, setBuilding] = useState('');
@@ -23,6 +24,8 @@ export default function ThingBoardPage({ setIsOnCerpStackPage }) {
 
     // Call the callback function to switch pages
     setIsOnCerpStackPage(true);
+    setIsOnInstructionPage(false);
+    setIsOnThingBoardPage(false);
   };
 
   return (
@@ -37,6 +40,7 @@ export default function ThingBoardPage({ setIsOnCerpStackPage }) {
             onChange={(e) => setSelectedApplication(e.target.value)}
             className="w-full p-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 transition-transform transform hover:scale-105"
             required
+            
           >
             <option value="" disabled>Wählen Sie eine Anwendung</option>
             {applications.map((app, index) => (
@@ -95,13 +99,14 @@ export default function ThingBoardPage({ setIsOnCerpStackPage }) {
         </div>
 
         {errorMessage && (
-          <div className="mb-4 p-2 bg-red-600 text-white rounded-md">
+          <div className="mb-4 p-2 text-red-600  rounded-md">
             {errorMessage}
           </div>
         )}
 
         <button
           type="submit"
+          onClick={handleSubmit}
           className="w-full p-2 shadow-2xl bg-gray-800 text-white rounded-2xl hover:bg-gray-700 focus:outline-none ring-2 ring-gray-500 transition-transform transform hover:scale-105"
         >
           Absenden

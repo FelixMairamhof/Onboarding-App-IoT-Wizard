@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllAdmins, insertSensorData, insertAdmin, insertSensorProfile } from './database.js';
+import { getAllAdmins, insertSensorData, insertAdmin, insertSensorProfile, getAllSensorProfiles, checkIfNumberExist } from './database.js';
 
 const router = express.Router();
 
@@ -25,6 +25,18 @@ router.post('/sensor-data', async (req, res) => {
     res.status(500).send('Error inserting sensor data');
   }
 });
+router.post('/sensor-data-check', async (req, res) => {
+    const { number, whichNumber } = req.body;
+    
+    try {
+      const isNumberInDB = await checkIfNumberExist({ number, whichNumber });
+      res.status(200).json({ exists: isNumberInDB });
+    } catch (err) {
+      console.error('Error in /sensor-data-check route:', err);
+      res.status(500).send('Error checking sensor data');
+    }
+  });
+  
 
 // Route to insert a new admin
 router.post('/admins', async (req, res) => {
@@ -51,6 +63,16 @@ router.post('/admins', async (req, res) => {
     } catch (err) {
       console.error('Error in /sensor-profile route:', err);
       res.status(500).send('Error inserting sensor profile');
+    }
+  });
+  router.get('/sensor-profile', async (req, res) => {
+
+    try {
+      const sensorProfiles = await getAllSensorProfiles();
+      res.status(201).json(sensorProfiles);
+    } catch (err) {
+      console.error('Error in /sensor-profile route:', err);
+      res.status(500).send('Error getting all sensor profiles');
     }
   });
 export default router;

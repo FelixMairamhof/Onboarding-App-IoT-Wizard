@@ -45,6 +45,19 @@ export const insertSensorData = async (sensorDataArray) => {
       throw err;
     }
   };
+  export const checkIfNumberExist = async ({ number, whichNumber }) => {
+    const query = `SELECT * FROM sensor_data WHERE ${whichNumber} = $1`;
+    
+    const values = [number];
+    try {
+      const res = await client.query(query, values);
+      console.log(res.rows);
+      return res.rows.length > 0;
+    } catch (err) {
+      console.error('Error checking sensor data:', err);
+      throw err;
+    }
+  };
   
 
 export const insertAdmin = async (email) => {
@@ -79,6 +92,17 @@ export const insertAdmin = async (email) => {
       throw err;
     }
 };
+
+export const getAllSensorProfiles = async () => {
+    try {
+        const res = await client.query('SELECT * FROM sensor_profiles');
+        console.log(res.rows);
+        return res.rows;
+      } catch (err) {
+        console.error('Error querying the database:', err);
+        throw err;
+      }
+}
 
 process.on('exit', () => {
   client.end().catch(err => console.error('Error closing the database connection:', err));

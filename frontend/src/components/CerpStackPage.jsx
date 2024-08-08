@@ -1,15 +1,39 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import LogOut from './LogOut';
 import QrScanner from './QrScanner'; 
+import axios from 'axios';
 
-export default function CerpStackPage({ setIsOnCerpStackPage }) {
+export default function CerpStackPage({ setIsOnInstructionPage, setActiveSensorProfile }) {
   const [selectedProject, setSelectedProject] = useState('');
   const [seriesNumber, setSeriesNumber] = useState('');
   const [formError, setFormError] = useState('');
-  const sensors = ["Rasby", "Microtik", "ESP32", "Arduino"];
+  const [sensors, setSensors] = useState([]);
+  const [numberText, setNumberText] = useState('Wähle davor einen Sensor aus');
+
+  useEffect(() => {
+    getAllSensorProfiles();
+  }, []);
+
+  const getAllSensorProfiles = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/sensor-profile');
+      setSensors(response.data);
+    } catch (err) {
+      setFormError('Fehler beim Laden der Sensorprofile');
+      console.error('Error fetching sensor profiles:', err);
+    }
+  };
 
   const handleProjectChange = (e) => {
-    setSelectedProject(e.target.value);
+    const selectedValue = e.target.value;
+    setSelectedProject(selectedValue);
+
+    const selectedSensor = sensors.find(sensor => sensor.name === selectedValue);
+    if (selectedSensor) {
+      setNumberText(`${selectedSensor.qr_result} eingeben`);
+    } else {
+      setNumberText('Wähle davor einen Sensor aus');
+    }
   };
 
   const handleSeriesNumberChange = (e) => {
@@ -20,18 +44,35 @@ export default function CerpStackPage({ setIsOnCerpStackPage }) {
     setSeriesNumber(text); // Update seriesNumber with QR scan result
   }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
     if (!selectedProject || !seriesNumber) {
       setFormError('Bitte wählen Sie einen Sensor aus und geben Sie eine Seriennummer ein.');
       return;
     }
+  
+    try {
+      const selectedSensor = sensors.find(sensor => sensor.name === selectedProject);
+      const qrResult = selectedSensor.qr_result; 
+      
+      const response = await axios.post('http://localhost:3000/api/sensor-data-check', {
+        number: seriesNumber,
+        whichNumber: qrResult,
+      });
+      
+      if (response.data.exists) {
+        setActiveSensorProfile(selectedSensor); // Pass the selected sensor profile
+        setIsOnInstructionPage(true); // Navigate to the instruction page
+        setFormError('');
+      } else {
+        setFormError(`Die ${qrResult} (${seriesNumber}) gibt es nicht`);
+      }
 
-    setFormError('');
-
-    console.log('Formular übermittelt:', { selectedProject, seriesNumber });
-    setIsOnCerpStackPage(false);
+    } catch (err) {
+      setFormError('Fehler beim Überprüfen der Sensordaten');
+      console.error(err);
+    }
   };
 
   return (
@@ -53,8 +94,8 @@ export default function CerpStackPage({ setIsOnCerpStackPage }) {
               Sensor auswählen
             </option>
             {sensors.map((sensor, index) => (
-              <option key={index} value={sensor}>
-                {sensor}
+              <option key={index} value={sensor.name}>
+                {sensor.name}
               </option>
             ))}
           </select>
@@ -62,7 +103,7 @@ export default function CerpStackPage({ setIsOnCerpStackPage }) {
 
         <div className="mb-6">
           <label className="block text-sm font-medium mb-1">
-            Seriennummer hinzufügen
+            {numberText}
           </label>
           <input
             type="text"
@@ -70,7 +111,7 @@ export default function CerpStackPage({ setIsOnCerpStackPage }) {
             value={seriesNumber}
             onChange={handleSeriesNumberChange}
             className="w-full p-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 transition-transform transform hover:scale-105"
-            placeholder="Seriennummer eingeben"
+            placeholder={numberText}
           />
         </div>
 

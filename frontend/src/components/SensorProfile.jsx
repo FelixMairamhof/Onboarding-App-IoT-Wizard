@@ -29,7 +29,7 @@ const SensorProfile = () => {
 
     try {
       const response = await axios.post('http://localhost:3000/api/sensor-profile', formData);
-      console.log(response.data);
+
       setResultMsg(`Sensor profile (${response.data.name}) created successfully! `);
       setFormData({
         name: '',
@@ -77,7 +77,7 @@ const SensorProfile = () => {
         <div className="flex flex-col">
           <label className="text-gray-300 text-sm mb-1">QR Result</label>
           <div className="flex flex-col space-y-2">
-            {['serialNumber', 'appKey', 'devEui', 'appEui'].map((option) => (
+            {['serial_number', 'app_key', 'dev_eui', 'app_eui'].map((option) => (
               <label key={option} className="flex items-center space-x-2">
                 <input
                   type="radio"

@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Header from './components/Header.jsx';
@@ -11,20 +12,23 @@ import FileUpload from './components/FileUpload.jsx';
 import LogOut from './components/LogOut.jsx';
 import ThingBoardPage from './components/ThingBoardPage.jsx';
 import axios from 'axios';
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import AddAdmin from './components/AddAdmin.jsx';
 import JsonUpload from './components/JsonUpload.jsx';
 import SensorProfile from './components/SensorProfile.jsx';
+import InstructionPage from './components/InstructionPage.jsx';
 
 function App() {
   const [isUser, setIsUser] = useState(true); 
-  const [token, updateToken] = useToken(""); // Default empty string
+  const [token, updateToken] = useToken("");
   const [isAdmin, setIsAdmin] = useState(false); 
   const [isOnCerpStackPage, setIsOnCerpStackPage] = useState(true);
+  const [isOnInstructionPage, setIsOnInstructionPage] = useState(false);
+  const [isOnThingBoardPage, setIsOnThingBoardPage] = useState(false); // State for ThingBoardPage
+  const [activeSensorProfile, setActiveSensorProfile] = useState(null); 
 
   useEffect(() => {
     if (token) {
-      // Fetch admin status from the backend
       const checkAdminStatus = async () => {
         try {
           const response = await axios.get('http://localhost:3000/api/admins', {
@@ -32,7 +36,6 @@ function App() {
               Authorization: `Bearer ${token}`
             }
           });
-          // Assuming the endpoint returns a list of admins, check if the token user is in the list
           const admins = response.data;
           const decodedToken = jwtDecode(token);
           const userEmail = decodedToken.sub;
@@ -54,28 +57,41 @@ function App() {
         {token ? (
           <>
             {isUser ? (
-              isOnCerpStackPage ? (
-                <>
-                  <CerpStackPage setIsOnCerpStackPage={setIsOnCerpStackPage} />
-                  <LogOut updateToken={updateToken} />
-                </>
+              isOnInstructionPage ? (
+                <InstructionPage 
+                  activeSensorProfile={activeSensorProfile} 
+                  setIsOnInstructionPage={setIsOnInstructionPage} 
+                  setIsOnThingBoardPage={setIsOnThingBoardPage} // Pass the function here
+                />
+              ) : isOnThingBoardPage ? (
+                <ThingBoardPage 
+                  setIsOnCerpStackPage={setIsOnCerpStackPage} 
+                  setIsOnInstructionPage={setIsOnInstructionPage}
+                  setIsOnThingBoardPage={setIsOnThingBoardPage}
+                   
+                />
+              ) : isOnCerpStackPage ? (
+                <CerpStackPage 
+                  setIsOnInstructionPage={setIsOnInstructionPage} 
+                  setActiveSensorProfile={setActiveSensorProfile} 
+                />
               ) : (
-                <>
-                  <ThingBoardPage setIsOnCerpStackPage={setIsOnCerpStackPage} />
-                  <LogOut updateToken={updateToken} />
-                </>
+                <div className='grid grid-cols-4 gap-10 max-sm:block'>
+                  <FileUpload />
+                  <AddAdmin />
+                  <JsonUpload />
+                  <SensorProfile />
+                </div>
               )
             ) : (
-              <>
-                <div className='grid grid-cols-3 gap-10 max-sm:block'>
-                  <FileUpload />
-                  <AddAdmin/>
-                  <JsonUpload/>
-                </div>
-                <SensorProfile/>
-                <LogOut updateToken={updateToken} />
-              </>
+              <div className='grid grid-cols-4 gap-10 max-sm:block'>
+                <FileUpload />
+                <AddAdmin />
+                <JsonUpload />
+                <SensorProfile />
+              </div>
             )}
+            <LogOut updateToken={updateToken} />
             {isAdmin && <RoleSwitch isUser={isUser} onToggle={() => setIsUser(!isUser)} />}
           </>
         ) : (
