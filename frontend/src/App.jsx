@@ -13,10 +13,14 @@ import LogOut from './components/LogOut.jsx';
 import ThingBoardPage from './components/ThingBoardPage.jsx';
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
-import AddAdmin from './components/AddAdmin.jsx';
+import AdminControl from './components/AdminControl.jsx';
 import JsonUpload from './components/JsonUpload.jsx';
 import SensorProfile from './components/SensorProfile.jsx';
 import InstructionPage from './components/InstructionPage.jsx';
+import DeleteSensorData from './components/DeleteSensorData.jsx';
+import DeleteSensorProfile from './components/DeleteSensorProfile.jsx';
+import UpdateSensorProfile from './components/UpdateSensorProfile.jsx';
+import UpdateSensorData from './components/UpdateSensorData.jsx';
 
 function App() {
   const [isUser, setIsUser] = useState(true); 
@@ -38,8 +42,9 @@ function App() {
           });
           const admins = response.data;
           const decodedToken = jwtDecode(token);
-          const userEmail = decodedToken.sub;
-          const isAdminUser = admins.some(admin => admin.email === userEmail);
+          const userEmail = decodedToken.sub.toLowerCase(); // Convert user's email to lowercase
+          const isAdminUser = admins.some(admin => admin.email.toLowerCase() === userEmail); // Compare both emails in lowercase
+          
           setIsAdmin(isAdminUser);
         } catch (error) {
           console.error('Error fetching admin status:', error);
@@ -61,7 +66,8 @@ function App() {
                 <InstructionPage 
                   activeSensorProfile={activeSensorProfile} 
                   setIsOnInstructionPage={setIsOnInstructionPage} 
-                  setIsOnThingBoardPage={setIsOnThingBoardPage} // Pass the function here
+                  setIsOnThingBoardPage={setIsOnThingBoardPage}
+                  setIsOnCerpStackPage={setIsOnCerpStackPage}
                 />
               ) : isOnThingBoardPage ? (
                 <ThingBoardPage 
@@ -76,19 +82,35 @@ function App() {
                   setActiveSensorProfile={setActiveSensorProfile} 
                 />
               ) : (
-                <div className='grid grid-cols-4 gap-10 max-sm:block'>
-                  <FileUpload />
-                  <AddAdmin />
-                  <JsonUpload />
-                  <SensorProfile />
-                </div>
-              )
-            ) : (
-              <div className='grid grid-cols-4 gap-10 max-sm:block'>
+              <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
                 <FileUpload />
-                <AddAdmin />
+                <AdminControl />
                 <JsonUpload />
                 <SensorProfile />
+              </div>
+
+              )
+            ) : (
+              <div className='grid max-sm:grid-cols-1 sm:grid-cols-2  xl:grid-cols-4 gap-6'>
+                <FileUpload />
+                <AdminControl />
+                <JsonUpload />
+                <SensorProfile />
+                <div className='xl:block hidden'>
+                <DeleteSensorData/>
+
+                </div>
+                <UpdateSensorData/>
+                <UpdateSensorProfile/>
+                <div className='xl:block hidden'>
+                  <DeleteSensorProfile/>
+                </div>
+                <div className='block xl:hidden'>
+                  <DeleteSensorData/>
+                </div>
+                <div  className='block xl:hidden'>
+                  <DeleteSensorProfile/>
+                </div>
               </div>
             )}
             <LogOut updateToken={updateToken} />

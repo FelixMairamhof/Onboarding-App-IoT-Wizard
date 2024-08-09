@@ -91,10 +91,11 @@ export default function ThingBoardPage({ setIsOnCerpStackPage, setIsOnInstructio
           <input
             type="text"
             value={room}
+            required
             onChange={(e) => setRoom(e.target.value)}
             className="w-full p-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 transition-transform transform hover:scale-105"
             placeholder="Raum eingeben" 
-            required
+            
           />
         </div>
 
@@ -110,6 +111,17 @@ export default function ThingBoardPage({ setIsOnCerpStackPage, setIsOnInstructio
           className="w-full p-2 shadow-2xl bg-gray-800 text-white rounded-2xl hover:bg-gray-700 focus:outline-none ring-2 ring-gray-500 transition-transform transform hover:scale-105"
         >
           Absenden
+        </button>
+        <button
+          type="submit"
+          onClick={() => {
+            setIsOnCerpStackPage(false);
+            setIsOnInstructionPage(true);
+            setIsOnThingBoardPage(false);
+          }}
+          className="w-full p-2 shadow-2xl bg-gray-800 text-white rounded-2xl hover:bg-gray-700 focus:outline-none ring-2 ring-gray-500 transition-transform transform hover:scale-105"
+        >
+          Zurück
         </button>
       </form>
     </div>

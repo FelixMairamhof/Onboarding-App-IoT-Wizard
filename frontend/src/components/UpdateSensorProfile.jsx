@@ -1,15 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const SensorProfile = () => {
+const UpdateSensorProfile = () => {
+  const [profiles, setProfiles] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
+    newName: '',
     guide: '',
-    qrResult: 'serialNumber', // Default value for radio buttons
+    qrResult: '',
     videoUrl: ''
   });
   const [resultMsg, setResultMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    // Fetch existing sensor profiles
+    axios.get("http://localhost:3000/api/sensor-profile")
+      .then(response => {
+        if (Array.isArray(response.data)) {
+          setProfiles(response.data);
+        } else {
+          console.error('Unexpected response data format:', response.data);
+          setErrorMsg('Error fetching sensor profiles.');
+        }
+      })
+      .catch(error => {
+        if (error.response) {
+          console.error('API error response:', error.response.data);
+          setErrorMsg(`Error: ${error.response.data.message || 'An error occurred'}`);
+        } else {
+          console.error('Error:', error.message);
+          setErrorMsg('Error fetching sensor profiles.');
+        }
+      });
+  }, []);
+
+  useEffect(() => {
+    // Auto-fill form when a profile is selected
+    const selectedProfile = profiles.find(profile => profile.name === formData.name);
+    if (selectedProfile) {
+      setFormData({
+        name: selectedProfile.name,
+        newName: selectedProfile.name || '',
+        guide: selectedProfile.guide || '',
+        qrResult: selectedProfile.qr_result || '',
+        videoUrl: selectedProfile.video_url || ''
+      });
+    }
+  }, [formData.name, profiles]);
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -17,28 +56,33 @@ const SensorProfile = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // Handle radio button changes
-  const handleRadioChange = (e) => {
-    setFormData({ ...formData, qrResult: e.target.value });
-  };
-
   // Handle form submission
   const handleSubmit = async (e) => {
+    e.preventDefault();
     setIsSubmitting(true);
+    setResultMsg('');
+    setErrorMsg('');
 
     try {
-      const response = await axios.post('http://localhost:3000/api/sensor-profile', formData);
+      const response = await axios.put("http://localhost:3000/api/sensor-profile", formData);
+      setResultMsg(`Sensor profile (${response.data.name}) updated successfully!`);
+      
+      // Update local state
+      setProfiles(profiles.map(profile => 
+        profile.name === formData.name ? response.data : profile
+      ));
 
-      setResultMsg(`Sensor profile (${response.data.name}) created successfully! `);
+      // Clear form data
       setFormData({
         name: '',
+        newName: '',
         guide: '',
-        qrResult: 'serialNumber',
+        qrResult: '',
         videoUrl: ''
       });
     } catch (error) {
-      setResultMsg('Error creating sensor profile. Please try again.');
-      console.error('Error submitting sensor profile:', error);
+      setErrorMsg('Error updating sensor profile. Please try again.');
+      console.error('Error updating sensor profile:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -46,18 +90,35 @@ const SensorProfile = () => {
 
   return (
     <div className="w-full mt-8 mb-4 max-w-xs px-12 bg-gradient-to-b from-gray-600 to-gray-700 p-8 rounded-2xl shadow-2xl animate-fadeIn hover:-translate-y-2 transition-transform duration-300 ease-in-out">
-      <h1 className="text-2xl font-bold text-white mb-6 text-center">Create Sensor Profile</h1>
+      <h1 className="text-2xl font-bold text-white mb-6 text-center">Update Sensor Profile</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex flex-col">
-          <label htmlFor="name" className="text-gray-300 text-sm mb-1">Name</label>
-          <input
-            id="name"
-            type="text"
+          <label htmlFor="profileName" className="text-gray-300 text-sm mb-1">Select Profile</label>
+          <select
+            id="profileName"
             name="name"
-            placeholder="Enter sensor profile name"
             value={formData.name}
-            onChange={handleChange}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
+            className="w-full px-3 py-2 hover:scale-105 bg-gray-200 border border-gray-500 rounded-md shadow-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400"
+          >
+            <option value="">Select Profile</option>
+            {profiles.map(profile => (
+              <option key={profile.name} value={profile.name}>
+                {profile.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col">
+          <label htmlFor="newName" className="text-gray-300 text-sm mb-1">New Name (optional)</label>
+          <input
+            id="newName"
+            type="text"
+            name="newName"
+            placeholder="Enter new profile name"
+            value={formData.newName}
+            onChange={handleChange}
             className="w-full px-3 py-2 hover:scale-105 bg-gray-200 border border-gray-500 rounded-md shadow-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400"
           />
         </div>
@@ -69,7 +130,6 @@ const SensorProfile = () => {
             placeholder="Enter guide text"
             value={formData.guide}
             onChange={handleChange}
-            required
             className="w-full px-3 py-2 hover:scale-105 bg-gray-200 border border-gray-500 rounded-md shadow-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400"
           />
         </div>
@@ -83,7 +143,7 @@ const SensorProfile = () => {
                   name="qrResult"
                   value={option}
                   checked={formData.qrResult === option}
-                  onChange={handleRadioChange}
+                  onChange={handleChange}
                   className="hidden peer"
                 />
                 <div className="flex items-center space-x-2 cursor-pointer">
@@ -113,14 +173,15 @@ const SensorProfile = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full py-2 px-4 hover:scale-105 rounded-md shadow-md ${isSubmitting ? 'bg-gray-400' : 'bg-gray-500'} text-white hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2`}
+          className={`w-full py-2 px-4 rounded-md shadow-md ${isSubmitting ? 'bg-gray-400' : 'bg-gray-500'} text-white hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-transform duration-300 ease-in-out`}
         >
-          {isSubmitting ? 'Submitting...' : 'Submit'}
+          {isSubmitting ? 'Updating...' : 'Update Profile'}
         </button>
       </form>
       {resultMsg && <div className="mt-4 text-gray-300 text-center">{resultMsg}</div>}
+      {errorMsg && <div className="mt-4 text-red-400 text-center">{errorMsg}</div>}
     </div>
   );
 };
 
-export default SensorProfile;
+export default UpdateSensorProfile;
