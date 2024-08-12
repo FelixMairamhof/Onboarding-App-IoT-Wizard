@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { processFileData } from "../utils/fileUtils";
+import useSensorDataStore from '../zustand/sensorDataZustand';
 
 const FileUpload = () => {
   const [file, setFile] = useState(null);
-  const [isDragging, setIsDragging] = useState(false); // Added state for dragging
-  const [resultMsg, setResultMsg] = useState(""); // State for displaying result messages
+  const [isDragging, setIsDragging] = useState(false);
+  const [resultMsg, setResultMsg] = useState("");
   const [columnNames, setColumnNames] = useState({
     serialNumber: "",
     devEui: "",
@@ -12,7 +13,11 @@ const FileUpload = () => {
     appKey: "",
   });
 
-  // Handle file selection through the file input
+  const { addSensorData, fetchSensorData } = useSensorDataStore((state) => ({
+    addSensorData: state.addSensorData,
+    fetchSensorData: state.fetchSensorData,
+  }));
+
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
@@ -20,7 +25,6 @@ const FileUpload = () => {
     }
   };
 
-  // Handle file drop
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
@@ -30,7 +34,6 @@ const FileUpload = () => {
     }
   };
 
-  // Handle drag events
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -41,23 +44,24 @@ const FileUpload = () => {
     setIsDragging(false);
   };
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setColumnNames({ ...columnNames, [name]: value });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (file) {
       try {
         const result = await processFileData(file, columnNames);
-        setResultMsg(result.message); // Set the result message
+        if (result.type === 'success') {
+          await addSensorData(result.data);  // Add data to Zustand store
+          await fetchSensorData(); // Refresh the data
+        }
+        setResultMsg(result.message);
       } catch (error) {
-        setResultMsg("An error occurred during file processing."); // Handle error
+        setResultMsg("An error occurred during file processing.");
       } finally {
-        // Reset states after processing
         setFile(null);
         setColumnNames({
           serialNumber: "",
@@ -65,7 +69,6 @@ const FileUpload = () => {
           appEui: "",
           appKey: "",
         });
-        // Force the file input to reset
         document.getElementById('file-input').value = '';
       }
     } else {
@@ -74,7 +77,7 @@ const FileUpload = () => {
   };
 
   return (
-    <div className="w-full mt-8 mb-4 max-w-xs px-12 bg-gradient-to-b from-gray-600 to-gray-700 p-8 rounded-2xl shadow-2xl animate-fadeIn hover:-translate-y-2 transition-transform duration-300 ease-in-out ">
+    <div className="w-full mt-8 mb-4 max-w-xs px-12 bg-gradient-to-b from-gray-600 to-gray-700 p-8 rounded-2xl shadow-2xl animate-fadeIn hover:-translate-y-2 transition-transform duration-300 ease-in-out">
       <h1 className="text-2xl font-bold text-white mb-6 text-center">Spreadsheet</h1>
       <div
         className={`flex flex-col bg-gray-200 hover:scale-105 border-2 border-dashed border-gray-500 items-center justify-center w-full h-24 rounded-lg cursor-pointer transition-transform duration-300 ease-in-out ${
@@ -121,7 +124,7 @@ const FileUpload = () => {
           Upload
         </button>
       </form>
-      {resultMsg && <div className="mt-4 text-gray-300 text-center">{resultMsg}</div>} {/* Display the result message */}
+      {resultMsg && <div className="mt-4 text-gray-300 text-center">{resultMsg}</div>}
     </div>
   );
 };

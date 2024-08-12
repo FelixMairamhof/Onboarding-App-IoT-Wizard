@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import useProfileStore from '../zustand/sensorProfileZustand';
 
 const SensorProfile = () => {
+  const { addProfile } = useProfileStore((state) => ({
+    addProfile: state.addProfile,
+  }));
   const [formData, setFormData] = useState({
     name: '',
     guide: '',
-    qrResult: 'serialNumber', // Default value for radio buttons
+    qrResult: 'serial_number', // Default value for radio buttons
     videoUrl: ''
   });
   const [resultMsg, setResultMsg] = useState('');
@@ -24,21 +27,20 @@ const SensorProfile = () => {
 
   // Handle form submission
   const handleSubmit = async (e) => {
+    e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/sensor-profile', formData);
-
-      setResultMsg(`Sensor profile (${response.data.name}) created successfully! `);
+      await addProfile(formData);
+      setResultMsg(`Sensor profile (${formData.name}) created successfully!`);
       setFormData({
         name: '',
         guide: '',
-        qrResult: 'serialNumber',
+        qrResult: 'serial_number',
         videoUrl: ''
       });
     } catch (error) {
       setResultMsg('Error creating sensor profile. Please try again.');
-      console.error('Error submitting sensor profile:', error);
     } finally {
       setIsSubmitting(false);
     }

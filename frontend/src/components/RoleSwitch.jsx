@@ -2,7 +2,7 @@ import React from 'react';
 
 const RoleSwitch = ({ isUser, onToggle }) => {
   return (
-    <div className="flex justify-center shadow-2xl border-2 mt-6 border-gray-400 rounded-full sm:absolute sm:top-2 sm:right-2">
+    <div className="flex justify-center shadow-2xl border-2 mt-6 hover:scale-105 border-gray-400 rounded-full sm:absolute sm:top-2 sm:right-2">
 
       
         <div className="relative inline-flex items-center justify-center w-64 h-12 bg-gray-700 rounded-full shadow-lg">

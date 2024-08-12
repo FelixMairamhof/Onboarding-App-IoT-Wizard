@@ -84,7 +84,7 @@ const AdminControl = () => {
           value={selectedAdmin}
           onChange={(e) => setSelectedAdmin(e.target.value)}
           required
-          className="w-full hover:scale-105 px-3 py-2 bg-gray-200 border text-gray-400 border-gray-500 rounded-md shadow-md  placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400"
+          className="w-full hover:scale-105 px-3 py-2 bg-gray-200 border  border-gray-500 rounded-md shadow-md  placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400"
         >
           <option value="" >Select Admin</option>
           {admins.map((admin) => (

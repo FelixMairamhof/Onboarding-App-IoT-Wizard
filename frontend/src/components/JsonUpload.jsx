@@ -1,5 +1,8 @@
+// components/JsonUpload.jsx
+
 import React, { useState } from 'react';
 import { processJsonData } from '../utils/fileUtils';
+import useSensorDataStore from '../zustand/sensorDataZustand';
 
 const JsonUpload = () => {
   const [file, setFile] = useState(null);
@@ -11,7 +14,12 @@ const JsonUpload = () => {
     appKey: '',
   });
 
-  // Handle file selection through the file input
+  const { addSensorData, fetchSensorData } = useSensorDataStore((state) => ({
+    addSensorData: state.addSensorData,
+    fetchSensorData: state.fetchSensorData,
+  }));
+
+
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
@@ -19,23 +27,24 @@ const JsonUpload = () => {
     }
   };
 
-  // Handle input changes
   const handleKeyChange = (e) => {
     const { name, value } = e.target;
     setKeys({ ...keys, [name]: value });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (file) {
       try {
         const result = await processJsonData(file, keys);
+        if (result.type === 'success') {
+          await addSensorData(result.data);  // Add data to Zustand store
+          await fetchSensorData(); // Refresh the data
+        }
         setResultMsg(result.message);
       } catch (error) {
         setResultMsg(error.message || 'An error occurred during file processing.');
       } finally {
-        // Reset states after processing
         setFile(null);
         setKeys({
           serialNumber: '',
@@ -57,11 +66,11 @@ const JsonUpload = () => {
       >
         <input
           type="file"
-          accept='.json'
+          accept=".json"
           onChange={handleFileChange}
           className="hidden"
           id="json-file-input"
-          key={file ? file.name : 'reset'} // This key prop will reset the input when file is cleared
+          key={file ? file.name : 'reset'}
         />
         <label htmlFor="json-file-input" className="text-gray-400 text-sm text-center cursor-pointer">
           Drag & drop a JSON file here, <br /> or click to select a file

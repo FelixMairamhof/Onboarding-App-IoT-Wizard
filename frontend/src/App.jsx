@@ -21,6 +21,8 @@ import DeleteSensorData from './components/DeleteSensorData.jsx';
 import DeleteSensorProfile from './components/DeleteSensorProfile.jsx';
 import UpdateSensorProfile from './components/UpdateSensorProfile.jsx';
 import UpdateSensorData from './components/UpdateSensorData.jsx';
+import SensorDataTable from './components/SensorDataTable.jsx';
+import SensorProfileTable from './components/SensorProfileTable.jsx';
 
 function App() {
   const [isUser, setIsUser] = useState(true); 
@@ -46,6 +48,7 @@ function App() {
           const isAdminUser = admins.some(admin => admin.email.toLowerCase() === userEmail); // Compare both emails in lowercase
           
           setIsAdmin(isAdminUser);
+          setIsUser(false);
         } catch (error) {
           console.error('Error fetching admin status:', error);
         }
@@ -91,7 +94,7 @@ function App() {
 
               )
             ) : (
-              <div className='grid max-sm:grid-cols-1 sm:grid-cols-2  xl:grid-cols-4 gap-6'>
+              <div className='grid max-sm:grid-cols-1 sm:grid-cols-2  xl:grid-cols-4 gap-6 '>
                 <FileUpload />
                 <AdminControl />
                 <JsonUpload />
@@ -110,6 +113,12 @@ function App() {
                 </div>
                 <div  className='block xl:hidden'>
                   <DeleteSensorProfile/>
+                </div>
+                <div className='max-sm:hidden sm:col-span-2 col-span-4'>
+                  <SensorDataTable/>
+                </div>
+                <div className='max-sm:hidden sm:col-span-2 col-span-4'>
+                  <SensorProfileTable/>
                 </div>
               </div>
             )}

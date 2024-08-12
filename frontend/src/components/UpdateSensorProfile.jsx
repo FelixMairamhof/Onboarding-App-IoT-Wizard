@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import useProfileStore from '../zustand/sensorProfileZustand';
 
 const UpdateSensorProfile = () => {
-  const [profiles, setProfiles] = useState([]);
+  const { profiles, refreshProfiles, updateProfile } = useProfileStore((state) => ({
+    profiles: state.profiles,
+    refreshProfiles: state.refreshProfiles,
+    updateProfile: state.updateProfile,
+  }));
   const [formData, setFormData] = useState({
     name: '',
     newName: '',
@@ -15,26 +20,8 @@ const UpdateSensorProfile = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Fetch existing sensor profiles
-    axios.get("http://localhost:3000/api/sensor-profile")
-      .then(response => {
-        if (Array.isArray(response.data)) {
-          setProfiles(response.data);
-        } else {
-          console.error('Unexpected response data format:', response.data);
-          setErrorMsg('Error fetching sensor profiles.');
-        }
-      })
-      .catch(error => {
-        if (error.response) {
-          console.error('API error response:', error.response.data);
-          setErrorMsg(`Error: ${error.response.data.message || 'An error occurred'}`);
-        } else {
-          console.error('Error:', error.message);
-          setErrorMsg('Error fetching sensor profiles.');
-        }
-      });
-  }, []);
+    refreshProfiles();
+  }, [refreshProfiles]);
 
   useEffect(() => {
     // Auto-fill form when a profile is selected
@@ -42,7 +29,7 @@ const UpdateSensorProfile = () => {
     if (selectedProfile) {
       setFormData({
         name: selectedProfile.name,
-        newName: selectedProfile.name || '',
+        newName: selectedProfile.newName || '',
         guide: selectedProfile.guide || '',
         qrResult: selectedProfile.qr_result || '',
         videoUrl: selectedProfile.video_url || ''
@@ -50,13 +37,11 @@ const UpdateSensorProfile = () => {
     }
   }, [formData.name, profiles]);
 
-  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -68,9 +53,7 @@ const UpdateSensorProfile = () => {
       setResultMsg(`Sensor profile (${response.data.name}) updated successfully!`);
       
       // Update local state
-      setProfiles(profiles.map(profile => 
-        profile.name === formData.name ? response.data : profile
-      ));
+      updateProfile(response.data);
 
       // Clear form data
       setFormData({
@@ -117,7 +100,7 @@ const UpdateSensorProfile = () => {
             type="text"
             name="newName"
             placeholder="Enter new profile name"
-            value={formData.newName}
+            value={formData.name}
             onChange={handleChange}
             className="w-full px-3 py-2 hover:scale-105 bg-gray-200 border border-gray-500 rounded-md shadow-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400"
           />
@@ -173,7 +156,7 @@ const UpdateSensorProfile = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full py-2 px-4 rounded-md shadow-md ${isSubmitting ? 'bg-gray-400' : 'bg-gray-500'} text-white hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-transform duration-300 ease-in-out`}
+          className={`w-full py-2 hover:scale-105 px-4 rounded-md shadow-md ${isSubmitting ? 'bg-gray-400' : 'bg-gray-500'} text-white hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-transform duration-300 ease-in-out`}
         >
           {isSubmitting ? 'Updating...' : 'Update Profile'}
         </button>

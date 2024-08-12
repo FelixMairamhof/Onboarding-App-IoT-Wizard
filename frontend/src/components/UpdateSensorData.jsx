@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import useSensorDataStore from '../zustand/sensorDataZustand';
 
 const UpdateSensorData = () => {
-  const [sensors, setSensors] = useState([]);
+  const { sensorData, fetchSensorData, updateSensorData } = useSensorDataStore((state) => ({
+    sensorData: state.sensorData,
+    fetchSensorData: state.fetchSensorData,
+    updateSensorData: state.updateSensorData,
+  }));
   const [formData, setFormData] = useState({
     serialNumber: '',
     newSerialNumber: '',
@@ -15,41 +19,20 @@ const UpdateSensorData = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Fetch existing sensors
-    axios.get("http://localhost:3000/api/sensor-data")
-      .then(response => {
-        if (Array.isArray(response.data)) {
-          setSensors(response.data);
-        } else {
-          console.error('Unexpected response data format:', response.data);
-          setErrorMsg('Error fetching sensor data.');
-        }
-      })
-      .catch(error => {
-        if (error.response) {
-          console.error('API error response:', error.response.data);
-          setErrorMsg(`Error: ${error.response.data.message || 'An error occurred'}`);
-        } else {
-          console.error('Error:', error.message);
-          setErrorMsg('Error fetching sensor data.');
-        }
-      });
-  }, []);
+    fetchSensorData();
+  }, [fetchSensorData]);
 
-  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // Handle profile selection
   const handleSelectChange = (e) => {
     const serialNumber = e.target.value;
     setFormData({ ...formData, serialNumber, newSerialNumber: '' });
 
     if (serialNumber) {
-      // Fetch details of the selected sensor
-      const selectedSensor = sensors.find(sensor => sensor.serial_number === serialNumber);
+      const selectedSensor = sensorData.find(sensor => sensor.serial_number === serialNumber);
       if (selectedSensor) {
         setFormData({
           serialNumber: selectedSensor.serial_number,
@@ -62,7 +45,6 @@ const UpdateSensorData = () => {
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -70,15 +52,8 @@ const UpdateSensorData = () => {
     setErrorMsg('');
 
     try {
-      const response = await axios.put("http://localhost:3000/api/sensor-data", formData);
-      setResultMsg(`Sensor data (${response.data.serial_number}) updated successfully!`);
-
-      // Update local state
-      setSensors(sensors.map(sensor =>
-        sensor.serial_number === formData.serialNumber ? response.data : sensor
-      ));
-
-      // Clear form data
+      const updatedSensor = await updateSensorData(formData);
+      setResultMsg(`Sensor data (${updatedSensor.serial_number}) updated successfully!`);
       setFormData({
         serialNumber: '',
         newSerialNumber: '',
@@ -88,7 +63,6 @@ const UpdateSensorData = () => {
       });
     } catch (error) {
       setErrorMsg('Error updating sensor data. Please try again.');
-      console.error('Error updating sensor data:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -109,7 +83,7 @@ const UpdateSensorData = () => {
             className="w-full px-3 py-2 hover:scale-105 bg-gray-200 border border-gray-500 rounded-md shadow-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400"
           >
             <option value="">Select Sensor</option>
-            {sensors.map(sensor => (
+            {sensorData.map(sensor => (
               <option key={sensor.serial_number} value={sensor.serial_number}>
                 {sensor.serial_number}
               </option>
@@ -167,7 +141,7 @@ const UpdateSensorData = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full py-2 px-4 rounded-md shadow-md ${isSubmitting ? 'bg-gray-400' : 'bg-gray-500'} text-white hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-transform duration-300 ease-in-out`}
+          className={`w-full py-2 px-4 hover:scale-105 rounded-md shadow-md ${isSubmitting ? 'bg-gray-400' : 'bg-gray-500'} text-white hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-transform duration-300 ease-in-out`}
         >
           {isSubmitting ? 'Updating...' : 'Update Data'}
         </button>

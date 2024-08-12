@@ -1,13 +1,7 @@
 import * as XLSX from 'xlsx';
 import axios from 'axios';
 
-/**
- * Processes the file, reads it, and converts it to JSON.
- * 
- * @param {File} file - The file to process.
- * @param {object} columnNames - The names of the columns to read.
- * @returns {Promise<object>} - A promise that resolves to an object containing the status and message.
- */
+
 export const processFileData = async (file, columnNames) => {
   return new Promise((resolve) => {
     if (!file) {
@@ -56,10 +50,11 @@ export const processFileData = async (file, columnNames) => {
             resolve({
               type: 'success',
               message: `File "${file.name}" uploaded successfully.`,
+              data: response.data
             });
           })
           .catch(error => {
-            console.error('Error posting data:', error);
+            console.error('Error posting data:', error.response ? error.response.data : error.message);
             resolve({
               type: 'error',
               message: 'Error posting sensor data to the server.',
@@ -76,14 +71,17 @@ export const processFileData = async (file, columnNames) => {
 
     reader.readAsArrayBuffer(file);
   });
-};export const processJsonData = async (file, keys) => {
+};
+
+
+
+export const processJsonData = async (file, keys) => {
   return new Promise((resolve, reject) => {
     if (!file) {
       reject({ type: 'error', message: 'No file provided' });
       return;
     }
 
-    // Check if the file is a JSON file
     if (!file.name.endsWith('.json')) {
       reject({ type: 'error', message: 'Please upload a valid JSON file (.json)' });
       return;
@@ -94,44 +92,34 @@ export const processFileData = async (file, columnNames) => {
       try {
         const jsonData = JSON.parse(e.target.result);
 
-        // Ensure jsonData is an array of objects
         if (!Array.isArray(jsonData)) {
           throw new Error('JSON data should be an array of objects.');
         }
 
-        // Validate that each object contains required keys and is not empty
         const mappedData = jsonData.map(item => ({
           serialNumber: item[keys.serialNumber] || '',
           devEui: item[keys.devEui] || '',
           appEui: item[keys.appEui] || '',
           appKey: item[keys.appKey] || '',
         })).filter(row =>
-          row.serialNumber.trim() !== '' && // Ensure serialNumber is not empty
-          row.devEui.trim() !== '' && 
-          row.appEui.trim() !== '' && 
+          row.serialNumber.trim() !== '' &&
+          row.devEui.trim() !== '' &&
+          row.appEui.trim() !== '' &&
           row.appKey.trim() !== ''
         );
 
-        // Check if any data remains after filtering
         if (mappedData.length === 0) {
           reject({ type: 'error', message: 'No valid data found in the JSON file.' });
           return;
         }
 
-        // Send data to the backend
-        const response = await fetch('http://localhost:3000/api/sensor-data', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(mappedData)
-        });
+        const response = await axios.post('http://localhost:3000/api/sensor-data', mappedData);
 
-        if (!response.ok) {
+        if (response.status === 200) {
+          resolve({ type: 'success', message: 'Data successfully uploaded.', data: response.data });
+        } else {
           throw new Error('Network response was not ok');
         }
-
-        resolve({ message: 'Data successfully uploaded.' });
       } catch (error) {
         reject({ type: 'error', message: error.message || 'Error processing JSON data.' });
       }
