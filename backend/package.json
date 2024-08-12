@@ -3,7 +3,7 @@
   "module": "server.js",
   "type": "module",
   "scripts": {
-    "build:frontend": "cd ../frontend && bun run build",
+    "build:frontend": "cd ../frontend && bun install && bun run build",
     "start": "bun server.js"
   },
   "devDependencies": {
