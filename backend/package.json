@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build:frontend": "cd ../frontend && bun install && bun run build",
-    "start": "bun server.js"
+    "start": "bun install && bun run build:frontend && bun server.js"
   },
   "devDependencies": {
     "@types/bun": "latest"
@@ -13,6 +13,8 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "path": "^0.12.7"
   }
 }
