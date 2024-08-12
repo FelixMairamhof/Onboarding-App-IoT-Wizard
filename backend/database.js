@@ -91,32 +91,50 @@ export const deleteSensorProfile = async (name) => {
       throw err;
     }
   };
-  
-export const insertSensorData = async (sensorDataArray) => {
-    const query = `
-      INSERT INTO sensor_data (serial_number, dev_eui, app_eui, app_key, created_at)
-      VALUES 
-      ${sensorDataArray.map((_, i) => `($${i*4+1}, $${i*4+2}, $${i*4+3}, $${i*4+4}, CURRENT_TIMESTAMP)`).join(', ')}
-      ON CONFLICT (serial_number)
-      DO UPDATE SET
-        dev_eui = EXCLUDED.dev_eui,
-        app_eui = EXCLUDED.app_eui,
-        app_key = EXCLUDED.app_key,
-        created_at = EXCLUDED.created_at
-      RETURNING *;
-    `;
+  export const insertSensorData = async (sensorDataArray) => {
     
-    const values = sensorDataArray.flatMap(data => [data.serialNumber, data.devEui, data.appEui, data.appKey]);
+    console.log(sensorDataArray);
   
+    // Begin a transaction
     try {
-      const res = await client.query(query, values);
-      console.log(res.rows);
-      return res.rows;
+      await client.query('BEGIN');
+  
+      // Define the insert query
+      const insertQuery = `
+        INSERT INTO sensor_data (serial_number, dev_eui, app_eui, app_key)
+        VALUES ($1, $2, $3, $4) 
+        ON CONFLICT (serial_number) DO NOTHING;
+      `;
+  
+      // Execute the insert query for each sensor data entry using a traditional for loop
+      for (let i = 0; i < sensorDataArray.length; i++) {
+        const data = sensorDataArray[i];
+        console.log(data);
+        if (
+          !data.serialNumber || !data.devEui ||
+          !data.appEui || !data.appKey
+        ) {
+          throw new Error('Each sensor data object must include serialNumber, devEui, appEui, and appKey');
+        }
+  
+        const { serialNumber, devEui, appEui, appKey } = data;
+        await client.query(insertQuery, [serialNumber, devEui, appEui, appKey]);
+      }
+  
+      // Commit the transaction
+      await client.query('COMMIT');
     } catch (err) {
+      // Rollback the transaction in case of error
+      await client.query('ROLLBACK');
       console.error('Error inserting sensor data:', err);
       throw err;
     }
   };
+  
+  
+  
+  
+  
   export const checkIfNumberExist = async ({ number, whichNumber }) => {
     const query = `SELECT * FROM sensor_data WHERE ${whichNumber} = $1`;
     

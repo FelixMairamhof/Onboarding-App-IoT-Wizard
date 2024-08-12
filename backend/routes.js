@@ -30,7 +30,7 @@ router.post('/sensor-data', async (req, res) => {
   try {
     const sensorDataArray = req.body;
     const insertedData = await insertSensorData(sensorDataArray);
-    res.status(201).json(insertedData);
+    res.status(200).json(insertedData);
   } catch (err) {
     console.error('Error in /sensor-data route:', err);
     res.status(500).send('Error inserting sensor data');
