@@ -1,5 +1,13 @@
 # Onboarding-App-Comm-Unity
 
-    bun install
+To install dependencies:
 
-    bun run dev
+```bash
+bun install
+```
+
+To run:
+
+```bash
+bun run dev
+```
