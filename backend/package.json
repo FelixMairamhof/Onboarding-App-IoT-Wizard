@@ -2,6 +2,10 @@
   "name": "backend",
   "module": "server.js",
   "type": "module",
+  "scripts": {
+    "build:frontend": "cd ../frontend && bun run build",
+    "start": "bun server.js"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
