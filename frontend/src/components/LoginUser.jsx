@@ -20,83 +20,93 @@ export default function LoginUser({ updateToken }) {
     setLoading(true); // Set loading state
 
     if (step === 'login') {
-      if (!email || !password) {
-        setFeedback('Bitte füllen Sie beide Felder aus.');
-        setLoading(false); // Reset loading state
-        return;
-      }
-
-      try {
-        // Perform the initial login
-        const responseUser = await axios.post(`${API_BASE_URL}/api/auth/login`, {
-          username: email,
-          password: password
-        });
-
-        setToken(responseUser.data.token);
-
-        // Perform 2FA providers request
-        const response2Fa = await axios.get(`${API_BASE_URL}/api/auth/2fa/providers`, {
-          headers: {
-            'Authorization': `Bearer ${responseUser.data.token}`,
-          }
-        });
-
-        console.log(response2Fa);
-
-        if (response2Fa.data.length > 0) {
-          setProviderType(response2Fa.data[0].type); // Assume providerType is at index 0
-          setStep('2fa'); // Proceed to 2FA step
-        } else {
-          updateToken(responseUser.data.token); // No 2FA required, update token
-          setFeedback('Erfolgreich Angemeldet');
-          setStep('login'); // Ensure correct step
+        if (!email || !password) {
+            setFeedback('Bitte füllen Sie beide Felder aus.');
+            setLoading(false); // Reset loading state
+            return;
         }
 
-      } catch (error) {
-        handleLoginError(error);
-      } finally {
-        setLoading(false); // Reset loading state
-      }
-    } else if (step === '2fa') {
-      if (!verificationCode) {
-        setFeedback('Bitte geben Sie den 2FA-Code ein.');
-        setLoading(false); // Reset loading state
-        return;
-      }
+        try {
+            // Perform the initial login
+            const responseUser = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+                username: email,
+                password: password
+            });
+            console.log(responseUser.data);
 
-      try {
-        // Remove any spaces from the verification code
-        const cleanedVerificationCode = verificationCode.replace(/\s+/g, '');
+            const userToken = responseUser.data.token;
+            setToken(userToken);
+                
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Verify the 2FA code with the API request
-        const response = await axios.post(
-          `${API_BASE_URL}/api/auth/2fa/verification/check`,
-          null, // No request body required
-          {
-            params: {
-              providerType,
-              verificationCode: cleanedVerificationCode // Use the cleaned code
-            },
-            headers: {
-              'Authorization': `Bearer ${token}`, // Ensure the token is correctly included
-              'Content-Type': 'application/json'
+            console.log(userToken);
+
+            const response2Fa = await axios.get(`${API_BASE_URL}/api/auth/2fa/providers`, {
+                headers: {
+                    'Authorization': `Bearer ${userToken}`, // Use the correct token
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response2Fa.data.length > 0) {
+                setProviderType(response2Fa.data[0].type); // Assume providerType is at index 0
+                setStep('2fa'); // Proceed to 2FA step
+            } else {
+                updateToken(userToken); // No 2FA required, update token
+                setFeedback('Erfolgreich Angemeldet');
+                setStep('login'); // Ensure correct step
             }
-          }
-        );
 
-        setToken(response.data.token);
-        updateToken(response.data.token); // Update the token using the custom hook
-        setFeedback('Erfolgreich Angemeldet');
-        setStep('login'); // Reset to login step for future logins
-      } catch (error) {
-        console.log(error);
-        handle2FAError(error);
-      } finally {
-        setLoading(false); // Reset loading state
-      }
+        } catch (error) {
+            if (error.response.status === 403) {
+                updateToken(token); // Ensure correct token is used
+            } else {
+                handleLoginError(error);
+            }
+        } finally {
+            setLoading(false); // Reset loading state
+        }
+    } else if (step === '2fa') {
+        if (!verificationCode) {
+            setFeedback('Bitte geben Sie den 2FA-Code ein.');
+            setLoading(false); // Reset loading state
+            return;
+        }
+
+        try {
+            // Remove any spaces from the verification code
+            const cleanedVerificationCode = verificationCode.replace(/\s+/g, '');
+
+            // Verify the 2FA code with the API request
+            const response = await axios.post(
+                `${API_BASE_URL}/api/auth/2fa/verification/check`,
+                null, // No request body required
+                {
+                    params: {
+                        providerType,
+                        verificationCode: cleanedVerificationCode // Use the cleaned code
+                    },
+                    headers: {
+                        'Authorization': `Bearer ${token}`, // Ensure the token is correctly included
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            const newToken = response.data.token;
+            setToken(newToken);
+            updateToken(newToken); // Update the token using the custom hook
+            setFeedback('Erfolgreich Angemeldet');
+            setStep('login'); // Reset to login step for future logins
+        } catch (error) {
+            console.log(error);
+            handle2FAError(error);
+        } finally {
+            setLoading(false); // Reset loading state
+        }
     }
-  };
+};
+
 
   const handleLoginError = (error) => {
     const status = error.response?.status;
